@@ -1,0 +1,133 @@
+---
+title: "Data Acquisition and Survey Methods - Report Group Project"
+author: "Anna Stonek, Jakub Kotala and Meiqi"
+date: "2024-06-21"
+output: pdf_document
+  toc: true
+  theme: united
+---
+
+# Loading necessary libraries
+```{r setup, include=FALSE}
+library(ggplot2)
+library(lessR)
+library(dplyr)
+```
+
+# Loading and cleaning data
+Firstly, we need to load and clean the data, since it contains some non-sensible values like for example "no answer" for gender. Since this only concerns one data point, we decided to exclude it from the analysis. Also, one data point only contains the value "TU Wien" for the study programme, so we also decided to exclude this data point from further analysis. Furthermore, we decided to bin the age values into groups of even sizes, which we used the summary statistics for. Moreover, we had to clean and generalize the values for the study programme, since this was a free-text field in the survey and students put very different strings there, though meaning the same programme. 
+
+```{r}
+df = read.csv("~/Desktop/Studium Unterlagen/Data Acquisition and Survey Methods/group1.csv")
+colnames(df) =  c("gender", "age", "study_programme", "question_1", "question_2", "question_3")
+
+for (i in (1:length(df$study_programme))){
+  if (grepl("Data Science", df$study_programme[i]) | grepl("Data science", df$study_programme[i]) | grepl("DataScience", df$study_programme[i])){
+    df$study_programme[i] = "Data Science MSc"
+  }
+  if (grepl("Business Informatics", df$study_programme[i])){
+    df$study_programme[i] = "Business Informatics MSc"
+  }
+  if (grepl("Medical", df$study_programme[i])){
+    df$study_programme[i] = "Medical Informatics BSc"
+  }
+  if (grepl("Mathematics / MSc", df$study_programme[i])){
+    df$study_programme[i] = "Mathematics MSc"
+  }
+  if (grepl("Software", df$study_programme[i])){
+    df$study_programme[i] = "Software & Information Engineering BSc"
+  }
+  if (grepl("Bachelor for", df$study_programme[i])){
+    df$study_programme[i] = "Technical Mathematics BSc"
+  }
+  if (df$age[i] < 25){
+    df$age[i] = "22-24"
+  } else if (df$age[i] >= 25 & df$age[i] < 27){
+    df$age[i] = "25-26"
+  } else if (df$age[i] >= 27 & df$age[i] < 29){
+    df$age[i] = "27-28"
+  } else if (df$age[i] >= 29){
+    df$age[i] = "29-57"
+  }
+}
+
+# drop NA and non-valuable values
+df = df[!df$gender %in% "no answer",]
+df = df[!df$study_programme %in% "TU Wien",]
+```
+# Research Question 1
+# Research Question 2
+The second research question we wanted to investigate was "How do students in different Master's degrees feel about the measures TU has implemented to reduce the environmental impact?"
+We wanted to see if there were any differences between the students of different Master's degrees regarding the students's opinion towards the measures TU has implemented to reduce the environmental impact. When looking at the data, we can see that there are not only Master's students in the course, so we will include students from Bachelor programmes as well in our analysis. 
+
+## Exploratory Data Analysis
+
+```{r question_2}
+q = table(df$question_2)
+PieChart(q, hole = 0, main="Do you think TU has already implemented \n enough measures to reduce their environmental impact?")
+
+ggplot(data=df, aes(factor(study_programme), fill=question_2)) + 
+  geom_bar(stat="count", width=0.7, position=position_dodge()) + 
+  coord_flip() + 
+  ggtitle("Relationship between degree \n and satisfaction of measures \n of TU Wien against climate issues") +
+  ylab("Frequency") +
+  xlab("Study Programme") +
+  labs(fill='answer') 
+
+```
+If we look at the piechart of the overall answers, we can see that about 40% of the interviewed students think that TU already has implemented enough measures against their climate impact and 60% if the students think that this is not the case. 
+
+In the bar plot we can clearly see that the group of Data Science Students is the biggest one among the study programmes. It seems like the students in study programmes like Medical Informatics BSc, Mathematics MSc and Business Informatics MSc rather do not think that TU has implemented enough measures, but since the groups are very small (< 5) we cannot make a statement about any possible correlation. 
+
+It also seems like the students of Technical Mathematics BSc and Software & Information Engineering BSc rather agree to the statement, that TU has already implemented enough measures, but again the groups are too small to make a confident statement about any possible correlation between the variables. 
+
+## Descriptive Inference
+```{r}
+df_help = df %>%
+  group_by(study_programme) %>%
+  count(df$question_2)
+r = df_help$n/c(2, 57,57,1,1,1,1)
+df_help$r = r
+df_help
+```
+
+Again, we can see here that the group of Data Science students makes the biggest portion of the surveyed students, and the other group are very small with only 1 or 2 members, so we cannot make any statement about a possible correlation. We can also see that the distribution of "yes" and "no" answers is very similar for the Data Science group, compared to the overall distribution, meaning that the other groups hardly contribute anything to the distribution. 
+
+## Analytic Inference
+To test our hypothesis H0: The proportions of "Yes" answers are equal in all groups of students, we will conduct a proportional t-test. 
+
+```{r}
+SF<-df[df$study_programme=="Data Science MSc",]
+SM<-df[df$study_programme=="Mathematics MSc",]
+ST=df[df$study_programme=="Business Informatics MSc",]
+SA=df[df$study_programme=="Medical Informatics BSc",]
+SB=df[df$study_programme=="Software & Information Engineering BSc",]
+SC=df[df$study_programme=="Technical Mathematics BSc",]
+
+x1<-sum(SF$question_2=="Yes")
+n1<-length(SF$question_2)
+x2<-sum(SM$question_2=="Yes")
+n2<-length(SM$question_2)
+x3=sum(ST$question_2=="Yes")
+n3=length(ST$question_2)
+x4=sum(SA$question_2=="Yes")
+n4=length(SA$question_2)
+x5=sum(SB$question_2=="Yes")
+n5=length(SB$question_2)
+x6=sum(SC$question_2=="Yes")
+n6=length(SC$question_2)
+prop.test(c(x1,x2,x3,x4,x5,x6),c(n1,n2,n3,n4,n5,n6))
+```
+
+As we can see, the p-value for this test is 0.3384 and therefore not smaller than the significance level 0.05. Hence we cannot reject the null hypothesis. Since some of the groups are very small though, this statistical result should be checked again with a bigger sample. 
+
+# Research Question 3
+# Conclusion
+
+
+
+```{r pressure}
+
+```
+
+
