@@ -2,9 +2,10 @@
 title: "Data Acquisition and Survey Methods - Report Group Project"
 author: "Anna Stonek, Jakub Kotala and Meiqi"
 date: "2024-06-21"
-output: pdf_document
-  toc: true
-  theme: united
+output:
+  pdf_document:
+    toc: true
+    number_sections: true
 ---
 
 # Loading necessary libraries
