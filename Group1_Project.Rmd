@@ -52,7 +52,7 @@ Therefore, we posed three research questions:
 
 2.  How do students in different Master's degrees feel about the measures TU has implemented to reduce the environmental impact?
 
-3.  Will gender affect the importance students place on environmental issues?
+3.  Will gender affect the perceived seriousness students place on environmental issues?
 
 Based on the research questions, we developed a survey contains following questions:
 
@@ -233,8 +233,7 @@ Since some of the groups are very small though, this statistical result should b
 
 # Research Question 3
 
-In the third research question we want to know will gender affect the importance students place on environmental issues, 
-and we gather answer on a scale of 1-5, with higher number indicating higher importance the student perceive this issue.
+In the third research question we want to know will gender affect the perceived seriousness students place on environmental issues, and we gather answer on a scale of 1-5, with higher number indicating higher importance the student perceive this issue.
 
 ## Exploratory Data Analysis
 
@@ -303,10 +302,10 @@ df_q3$gender <- droplevels(df_q3$gender)
 
 Now we made a null hypothesis (H0): 
 
-There is no difference between gender and student's perceive of importance on environmental issue.
+There is no difference between gender and student perceived seriousness on environmental issue.
 
 We then test this hypothesis with our sample, since the gender is categorical, 
-answers to questions 3 is ordinal/numerical, we adpoted a Kruskal-Qallis test on the sample.
+answers to questions 3 is ordinal/numerical, we adpoted a Kruskal- Wallis test on the sample.
 
 ```{r hypothesis test q3}
 kruskal_test_q3 <- kruskal.test(question_3 ~ gender, data = df_q3)
@@ -354,14 +353,14 @@ regarding the importance we placed on environmental issues. Each bar in the hist
 
 The distribution shows us the differences in means we might expect to see from the answer of question 3 is mostly ranged between [-0.5, 1], while the red vertical line showing our observed test statistics is not out positioned in unusual range, suggests that the observed differenece is likely to occur by a random chance.
 
-The p-value from permutation is 0.56, which is the proportion of permuted test statistics as extreme or more extreme than the observed statistics (original data). A value of 0.56 suggests that we can not reject the null hypothesis, and there is no significant difference observed between gender and importance on environmental issues.
+The p-value from permutation is 0.56, which is the proportion of permuted test statistics as extreme or more extreme than the observed statistics (original data). A value of 0.56 suggests that we can not reject the null hypothesis, and there is no significant difference observed between gender and perceived seriousness on environmental issues.
 
 
 # Conclusion
 
 
 
-- For the third research question, we found gender will not affect the importance students place on environmental issues.
+- For the third research question, we found gender will not affect perceived seriousness students place on environmental issues.
 
 ```{r pressure}
 
