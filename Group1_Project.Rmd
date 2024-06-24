@@ -11,6 +11,7 @@ editor_options:
   markdown: 
     wrap: sentence
 ---
+
 \newpage
 
 # Basic setup
@@ -52,14 +53,13 @@ Therefore, we posed three research questions:
 
 2.  How do students in different Master's degrees feel about the measures TU has implemented to reduce the environmental impact?
 
-3.  Will gender affect the perceived seriousness students place on environmental issues?
+3.  Will gender affect the importance students place on environmental issues?
 
 Based on the research questions, we developed a survey contains following questions:
 
 1.  On a scale from 1 to 10, how motivated are you to take steps towards reducing your carbon footprint, realising that it may raise the cost of living?
 
-    -   For example taking an expensive train rather to take a cheap Ryanair flight.
-        1: Not motivated at all, 10: Very motivated.
+    -   For example taking an expensive train rather to take a cheap Ryanair flight. 1: Not motivated at all, 10: Very motivated.
 
 2.  Do you think TU has already implemented enough measures to reduce their environmental impact?
 
@@ -82,7 +82,8 @@ colnames(df) <- c("gender", "age", "study_programme",
                   "question_1", "question_2", "question_3")
 ```
 
-Since this only concerns one data point, and we have 66 observations in total. This is only 1.5% of the total sample size, we decided to exclude it from the analysis.
+Since this only concerns one data point, and we have 66 observations in total.
+This is only 1.5% of the total sample size, we decided to exclude it from the analysis.
 
 Also, two data point only contains the value "TU Wien" for the study programme, so we also decided to exclude this data point from further analysis.
 
@@ -139,6 +140,7 @@ for (i in (1:length(df$study_programme))){
 ```
 
 Next, based on the column, we categorised the data.
+
 ```{r factorise column}
 # factorise column
 df$gender <- factor(df$gender, levels = c("male","female","diverse"))
@@ -233,7 +235,7 @@ Since some of the groups are very small though, this statistical result should b
 
 # Research Question 3
 
-In the third research question we want to know will gender affect the perceived seriousness students place on environmental issues, and we gather answer on a scale of 1-5, with higher number indicating higher importance the student perceive this issue.
+In the third research question we want to know will gender affect the importance students place on environmental issues, and we gather answer on a scale of 1-5, with higher number indicating higher importance the student perceive this issue.
 
 ## Exploratory Data Analysis
 
@@ -244,14 +246,16 @@ ggplot(df, aes(question_3)) +
   geom_histogram(bins = 10) +
   facet_wrap( ~ gender) +
   labs(
-    title = "Perceive on Importance of Environmental Issues by Gender",
+    title = "Students' opinion on the Importance of Environmental Issues by Gender",
     x = "Importance of Environmental Issues 
     (Not important [1] - Very important [5])",
     y = "Total number of answers"
   ) 
 ```
 
-We can see that there is only 1 answer under gender group "diverse", so no distribution can be found with this category. While for the "male/female" group, the distribution of answer looks indeed are not so identical. Male respondents gave higher answer count in scale 4 than scale 5, compared to female respondents where more people gave answer in scale 5. 
+We can see that there is only 1 answer under gender group "diverse", so no distribution can be found with this category.
+While for the "male/female" group, the distribution of answer looks indeed are not so identical.
+Male respondents gave higher answer count in scale 4 than scale 5, compared to female respondents where more people gave answer in scale 5.
 
 ## Descriptive Inference
 
@@ -279,88 +283,103 @@ kable(summary_q3, caption =
 
 In summary, in the total 62 sample we collected, there are 71% male respondent, 27% female respondent and 2% non-binary respondent.
 
-Besides the only 1 non-binary respondent who gave answer in a scale of 4, both the answers from male and female respondent show a median value of 4, while mean from female group (4.2) slightly higher than the male group (4). 
+Besides the only 1 non-binary respondent who gave answer in a scale of 4, both the answers from male and female respondent show a median value of 4, while mean from female group (4.2) slightly higher than the male group (4).
 
 This indicates in general, our students in this survey have a tendency of perceive the environmental issue as "Important".
 
 The difference from basic statistics and different sample size for each group can't tell us whether there is a difference on the answer among different gender groups clearly.
 
-Therefore, We will further test our hypothesis in the next section. 
+Therefore, We will further test our hypothesis in the next section.
 
-Before that, since there is only 1 non-binary respondent and no meaningful inference can be made from this,
-I will exclude it from the dataset.
+Before that, since there is only 1 non-binary respondent and no meaningful inference can be made from this, I will exclude it from the dataset.
 
 ```{r exclude diverse group}
 # exclude one non-binary answer
 df_q3 <- df %>% filter(gender != "diverse")
 
-#drop the level for the factorised column
+# drop the level for the factorised column
 df_q3$gender <- droplevels(df_q3$gender)
 ```
 
 ## Analytic Inference
 
-Now we made a null hypothesis (H0): 
+Now we made a null hypothesis (H0):
 
-There is no difference between gender and student perceived seriousness on environmental issue.
+There is no difference between gender and students' opinion on the importance of environmental issues.
 
-We then test this hypothesis with our sample, since the gender is categorical, 
-answers to questions 3 is ordinal/numerical, we adpoted a Kruskal- Wallis test on the sample.
+We then test this hypothesis with our sample, since the gender is categorical, we used two test method to the sample:
 
-```{r hypothesis test q3}
+-   Kruskal- Wallis test, where we treat answer as ordinal data, and in the result we can compare medians of the groups, to see if the medians of male/female for this question is different.
+
+-   Chi-Square test, where we treat answer as categorical data (1,2,3,4,5), and in the result we can compare the independence between the answers and the factor (gender).
+
+```{r hypothesis test q3, warning = FALSE}
+# kruskal wallis test
 kruskal_test_q3 <- kruskal.test(question_3 ~ gender, data = df_q3)
 
 print(kruskal_test_q3)
+
+# chi-square test
+# change answer to categorical first
+df_q3$question_3_cate <- as.factor(df_q3$question_3)
+
+# create a contingency table
+contingency_table_q3 <- table(df_q3$gender, df_q3$question_3_cate)
+
+# perform chi-square test
+chi_square_test_q3 <- chisq.test(contingency_table_q3)
+
+print(chi_square_test_q3)
 ```
 
-The result show us p-value for the hypothesis is 0.4405, which is not significant. 
+The result show us:
 
-We can see that gender will not affect the importance students place on environmental issues.
+- p-value from Kruskal-Wallis test for the hypothesis is 0.4405, which is not significant.Showing that the median answers on the importance of environmental issues does not differ among male/female respondent groups.
 
-Furthermore, since propably not all students in this class have responded to the survey questionaire, 
-by using *infer* package, we can re-sample our dataset and test the hypothesis using non-parametric permutation method, to make the result more reliable.
+- p-value from Chi-Square test for the hypothesis is 0.8635, which is also not significant. Showing that the answer of question 3 is not dependent on the gender.
+
+In summary, We can see that gender will not affect the importance students place on environmental issues.
+
+Furthermore, since propably not all students in this class have responded to the survey questionaire, by using *infer* package, we can re-sample our dataset and test the hypothesis using non-parametric permutation method, to make the result more reliable.
 
 ```{r hypothesis test q3 infer}
 # specify the hypothesis
 hypothesis_q3 <- df_q3 %>%
   # specify answer to q3 as response, gender as explanatory variable
-  specify(question_3 ~ gender) %>%
+  specify(question_3_cate ~ gender) %>%
   # set the hypothesis as independent to question
   hypothesise(null = "independence") %>%
   # permute 1000 times
   generate(reps = 1000, type = "permute") %>%
   # calculate the diff in means
-  calculate(stat = "diff in means", order = c("male", "female"))
+  calculate(stat = "Chisq")
 
 # calculate the observed statistics
 obs_q3 <- df_q3 %>%
-  specify(question_3 ~ gender) %>%
-  calculate(stat = "diff in means", order = c("male", "female"))
+  specify(question_3_cate ~ gender) %>%
+  calculate(stat = "Chisq")
 
 # visualise the null distribution and observed statistic
 visualize(hypothesis_q3) +
-  shade_p_value(obs_q3, direction = "two-sided")
+  shade_p_value(obs_q3, direction = "greater")
 
 # get p_value
 p_value_q3 <- hypothesis_q3 %>%
-  get_p_value(obs_q3, direction = "two_sided")
+  get_p_value(obs_q3, direction = "greater")
 
 print(p_value_q3)
 ```
 
-The visualisation shows the simultion-based distribution of null hypothesis for the difference in means between "male/female"
-regarding the importance we placed on environmental issues. Each bar in the histogram represents the count of times a particular value of the test statistic was obtained from the permuted samples.
+The visualisation shows the simultion-based distribution of null hypothesis for the chi-square test between "male/female" regarding the importance we placed on environmental issues.
+Each bar in the histogram represents the count of times a particular value of the test statistic was obtained from the permuted samples.
 
-The distribution shows us the differences in means we might expect to see from the answer of question 3 is mostly ranged between [-0.5, 1], while the red vertical line showing our observed test statistics is not out positioned in unusual range, suggests that the observed differenece is likely to occur by a random chance.
+The p-value from permutation is 0.882, which is the proportion of permuted test statistics as extreme or more extreme than the observed statistics (original data), and we can also see on the graph that most permuted tests are larger than our observed statistics. The observed chi-square statistic (red line) lies well within the central part of the null distribution.
 
-The p-value from permutation is 0.56, which is the proportion of permuted test statistics as extreme or more extreme than the observed statistics (original data). A value of 0.56 suggests that we can not reject the null hypothesis, and there is no significant difference observed between gender and perceived seriousness on environmental issues.
-
+Therefore, both p_value and graph suggests that there is no strong evidence against the null hypothesis of independence between gender and the importance students placed on the environmental issues.
 
 # Conclusion
 
-
-
-- For the third research question, we found gender will not affect perceived seriousness students place on environmental issues.
+-   For the third research question, we found gender will not affect the importance students placed on environmental issues.
 
 ```{r pressure}
 
