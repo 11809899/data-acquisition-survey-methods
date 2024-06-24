@@ -101,8 +101,6 @@ df <- df %>% filter(!is.na(question_1))
 nrow(df)
 ```
 
-Furthermore, we decided to bin the age values into groups of even sizes, based on the summary statistics, dividing the groups to: [minimum - 1st quantile], [1st quantile - median], [median - 3rd quantile], [3rd quantile - maximum]
-
 Moreover, we had to clean and generalize the values for the study programme, since this was a free-text field in the survey and students put very different strings there, though meaning the same programme.
 
 ```{r clean data step 2}
@@ -127,15 +125,6 @@ for (i in (1:length(df$study_programme))){
   if (grepl("Bachelor for", df$study_programme[i])){
     df$study_programme[i] = "Technical Mathematics BSc"
   }
-  if (df$age[i] < 25){
-    df$age[i] = "22-24"
-  } else if (df$age[i] >= 25 & df$age[i] < 27){
-    df$age[i] = "25-26"
-  } else if (df$age[i] >= 27 & df$age[i] < 29){
-    df$age[i] = "27-28"
-  } else if (df$age[i] >= 29){
-    df$age[i] = "29-57"
-  }
 }
 ```
 
@@ -144,7 +133,6 @@ Next, based on the column, we categorised the data.
 ```{r factorise column}
 # factorise column
 df$gender <- factor(df$gender, levels = c("male","female","diverse"))
-df$age <- factor(df$age, levels = c("22-24","25-26","27-28","29-57"))
 df$study_programme <- factor(df$study_programme, 
                              levels = c("Medical Informatics BSc",
                                         "Software & Information Engineering BSc",
@@ -159,6 +147,45 @@ summary(df)
 ```
 
 # Research Question 1
+
+The first research question says: "Is there a correlation between the age and the motivation of students to reduce their carbon footprint?". We wanted to find out if there is a relationship between students' age and their motivation to reduce their carbon footprint. For answering this question we used variables "age" and "the "question_1".
+
+## Exploratory Data Analysis
+
+We can consider both variables as continuous variables, therefore as first step in exploratory analysis we created a jitter plot. We can see a positive correlation between these two variables, anyway, the relationship isn't very strong.
+
+```{r}
+ggplot(df, aes(x = question_1, y = age)) +
+  geom_jitter(color = "light green", size = 3) +
+  labs(title = "Students' motivation vs. Age",
+       x = "Level of motivation",
+       y = "Age") +
+theme(plot.title = element_text(hjust=0.5)) + 
+  scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                     labels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
+```
+In the next part we will compute a correlation coefficient. To find out what kind of correlation coefficient to use, we had to inspect the normality of variables. One possibility could be to look at the histograms, but we focused more on the Shapiro-Wilk test of normality. For both variables we got a very small p-value, therefore we rejected the null hypothesis -> they aren't normally distributed.
+
+```{r}
+shapiro.test(df$age)
+shapiro.test(df$question_1)
+```
+
+## Descriptive Inference
+
+Both variables aren’t normally distributed, so we computed Spearman correlation coefficient. The resulting number is 0.3204. The value of the coefficient is higher than we expected, but we cannot yet say there is a relationship. At first we have to check it with a statistical test.
+
+```{r}
+cor(df$age, df$question_1, method = "spearman")
+```
+
+## Analytic Inference
+
+For testing our hypothesis that correlation coefficient isn't zero, we used Spearman's variation of correlation test. The resulting p-value is smaller than 0.05 and we can finally conclude there is a relationship between students' age and their motivation to reduce their carbon footprint.
+
+```{r}
+cor.test(df$age, df$question_1, method = "spearman")
+```
 
 # Research Question 2
 
@@ -342,6 +369,16 @@ In summary, We can see that gender will not affect the importance students place
 
 Furthermore, since propably not all students in this class have responded to the survey questionaire, by using *infer* package, we can re-sample our dataset and test the hypothesis using non-parametric permutation method, to make the result more reliable.
 
+```{r}
+hypothesis_q3 <- df_q3 %>%
+  # specify answer to q3 as response, gender as explanatory variable
+  specify(question_3_cate ~ gender) %>%
+  # set the hypothesis as independent to question
+  hypothesise(null = "independence") %>%
+  # calculate the diff in means
+  generate(reps = 1000, type = "permute")
+```
+
 ```{r hypothesis test q3 infer}
 # specify the hypothesis
 hypothesis_q3 <- df_q3 %>%
@@ -379,8 +416,11 @@ Therefore, both p_value and graph suggests that there is no strong evidence agai
 
 # Conclusion
 
--   For the third research question, we found gender will not affect the importance students placed on environmental issues.
+-   The older the students are, the more motivation they have to reduce their carbon footprint.
 
-```{r pressure}
+-   The Master’s programme of students does not have an effect on the opinion of students on the measures TU has      implemented to reduce their environmental impact.
 
-```
+-   Gender does not affect students’ opinions on the importance of environmental issues.
+
+
+
