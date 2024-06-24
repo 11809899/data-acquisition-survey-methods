@@ -369,16 +369,6 @@ In summary, We can see that gender will not affect the importance students place
 
 Furthermore, since propably not all students in this class have responded to the survey questionaire, by using *infer* package, we can re-sample our dataset and test the hypothesis using non-parametric permutation method, to make the result more reliable.
 
-```{r}
-hypothesis_q3 <- df_q3 %>%
-  # specify answer to q3 as response, gender as explanatory variable
-  specify(question_3_cate ~ gender) %>%
-  # set the hypothesis as independent to question
-  hypothesise(null = "independence") %>%
-  # calculate the diff in means
-  generate(reps = 1000, type = "permute")
-```
-
 ```{r hypothesis test q3 infer}
 # specify the hypothesis
 hypothesis_q3 <- df_q3 %>%
