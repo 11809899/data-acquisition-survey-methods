@@ -140,7 +140,6 @@ df$study_programme <- factor(df$study_programme,
                                         "Business Informatics MSc",
                                         "Data Science MSc",
                                         "Mathematics MSc"))
-df$question_2 <- factor(df$question_2, levels = c("Yes","No"))
 
 #summary dataset
 summary(df)
@@ -198,7 +197,7 @@ When looking at the data, we can see that there are not only Master's students i
 q = table(df$question_2)
 PieChart(q, hole = 0, main="Do you think TU has already implemented \n enough measures to reduce their environmental impact?")
 
-ggplot(data=df, aes(factor(study_programme), fill=question_2)) + 
+ggplot(data=df, aes(factor(study_programme), fill=as.factor(question_2))) + 
   geom_bar(stat="count", width=0.7, position=position_dodge()) + 
   coord_flip() + 
   ggtitle("Relationship between degree \n and satisfaction of measures \n of TU Wien against climate issues") +
@@ -210,10 +209,9 @@ ggplot(data=df, aes(factor(study_programme), fill=question_2)) +
 
 If we look at the piechart of the overall answers, we can see that about 40% of the interviewed students think that TU already has implemented enough measures against their climate impact and 60% if the students think that this is not the case.
 
-In the bar plot we can clearly see that the group of Data Science Students is the biggest one among the study programmes.
-It seems like the students in study programmes like Medical Informatics BSc, Mathematics MSc and Business Informatics MSc rather do not think that TU has implemented enough measures, but since the groups are very small (\< 5) we cannot make a statement about any possible correlation.
+In the bar plot we can clearly see that the group of Data Science Students is the biggest one among the study programs.
+So one thing we can deduct from this first look at the data is that the groups other than Data Science are too small to make any statistically relevant statement. To remedy this, we are going to pool all the small groups together and compare them to the group of Data Science students.
 
-It also seems like the students of Technical Mathematics BSc and Software & Information Engineering BSc rather agree to the statement, that TU has already implemented enough measures, but again the groups are too small to make a confident statement about any possible correlation between the variables.
 
 ## Descriptive Inference
 
@@ -221,48 +219,32 @@ It also seems like the students of Technical Mathematics BSc and Software & Info
 df_help = df %>%
   group_by(study_programme) %>%
   count(df$question_2)
-r = df_help$n/c(2, 57,57,1,1,1,1)
+r = df_help$n/c(1,1,1,2,57,57,1)
 df_help$r = r
 df_help
 ```
 
 Again, we can see here that the group of Data Science students makes the biggest portion of the surveyed students, and the other group are very small with only 1 or 2 members, so we cannot make any statement about a possible correlation.
-We can also see that the distribution of "yes" and "no" answers is very similar for the Data Science group, compared to the overall distribution, meaning that the other groups hardly contribute anything to the distribution.
+We can also see that the distribution of "yes" and "no" answers is very similar for the Data Science group, compared to the overall distribution, meaning that the other groups hardly contribute anything to the distribution. As mentioned before, to remedy this for the statistical test, the other groups will be pooled together to get more meaningful results.
 
 ## Analytic Inference
 
-To test our hypothesis H0: The proportions of "Yes" answers are equal in all groups of students, we will conduct a proportional t-test.
+To test our hypothesis H0: The frequency of "Yes" answers are equal in all groups of students meaning group "Data Science" and group "Others", we will conduct a Chi-Square test.
 
 ```{r}
-SF<-df[df$study_programme=="Data Science MSc",]
-SM<-df[df$study_programme=="Mathematics MSc",]
-ST=df[df$study_programme=="Business Informatics MSc",]
-SA=df[df$study_programme=="Medical Informatics BSc",]
-SB=df[df$study_programme=="Software & Information Engineering BSc",]
-SC=df[df$study_programme=="Technical Mathematics BSc",]
+helpy = ifelse(df$study_programme == "Data Science MSc", 1, 0)
+table(helpy, df$question_2)
 
-x1<-sum(SF$question_2=="Yes")
-n1<-length(SF$question_2)
-x2<-sum(SM$question_2=="Yes")
-n2<-length(SM$question_2)
-x3=sum(ST$question_2=="Yes")
-n3=length(ST$question_2)
-x4=sum(SA$question_2=="Yes")
-n4=length(SA$question_2)
-x5=sum(SB$question_2=="Yes")
-n5=length(SB$question_2)
-x6=sum(SC$question_2=="Yes")
-n6=length(SC$question_2)
-prop.test(c(x1,x2,x3,x4,x5,x6),c(n1,n2,n3,n4,n5,n6))
+chisq.test(helpy, df$question_2)
+fisher.test(helpy, df$question_2)
 ```
 
-As we can see, the p-value for this test is 0.3384 and therefore not smaller than the significance level 0.05.
-Hence we cannot reject the null hypothesis.
-Since some of the groups are very small though, this statistical result should be checked again with a bigger sample.
+As we can see, the p-value for this test is 1 and therefore not smaller than the significance level 0.05. To further test the hypothesis, we also conducted a fisher test, which led to the same result.
+Hence we cannot reject the null hypothesis, so we cannot prove that students from different Master's programs have a different opinion on the topic of measures against environmental impact that have already been implemented by TU Wien.
 
 # Research Question 3
 
-In the third research question we want to know will gender affect the importance students place on environmental issues, and we gather answer on a scale of 1-5, with higher number indicating higher importance the student perceive this issue.
+In the third research question we want to know: Will gender affect the importance students place on environmental issues? And we gather answers on a scale of 1-5, with a higher number indicating higher importance the students perceive this issue.
 
 ## Exploratory Data Analysis
 
